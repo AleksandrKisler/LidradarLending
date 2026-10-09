@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LidRadar — радар упущенной выручки в переписках с клиентами</title>
+  <meta name="description" content="LidRadar следит за перепиской в Telegram, показывает сделки, которые вот-вот сорвутся, и считает деньги, которые удалось вернуть. Для автосервисов, детейлинга и салонов. Бесплатный закрытый бета-тест стартует 15 октября, публичный релиз 19 ноября.">
+  <meta name="theme-color" content="#5640d8">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Деньги не должны теряться молча">
+  <meta property="og:description" content="Радар упущенной выручки для бизнеса, который продаёт через мессенджер. Бета-тест стартует 15 октября и бесплатный, публичный релиз 19 ноября.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%230e1422'/%3E%3Ccircle cx='12' cy='12' r='7' fill='none' stroke='%23cbbeff' stroke-width='1.5'/%3E%3Cpath d='M12 12 18 6' stroke='%23cbbeff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;icon_names=admin_panel_settings,alarm,arrow_downward,assignment_late,bedtime,block,chat,check,check_circle,comments_disabled,dashboard,database,edit_note,error,event,event_available,expand_more,fact_check,forum,group,history,image,key,lock,mark_chat_unread,menu,notifications_active,payments,psychology,radar,request_quote,rule,savings,schedule,send,shield_lock,storefront,support_agent,sync,tune,verified_user,visibility&amp;display=block">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body id="top">
+  <a class="skip" href="#main">К содержимому</a>
+
+  <header class="appbar" id="appbar">
+    <div class="appbar__in">
+      <a class="brand" href="#top" aria-label="LidRadar, в начало страницы">
+        <svg class="brand__mark" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M12 12 19 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+        </svg>
+        <span>LidRadar</span>
+      </a>
+      <nav class="appbar__nav" aria-label="Разделы страницы">
+        <a href="#how">Как это работает</a>
+        <a href="#signals">Сигналы</a>
+        <a href="#money">Деньги</a>
+        <a href="#security">Безопасность</a>
+        <a href="#faq">Вопросы</a>
+      </nav>
+      <a class="btn btn--filled" href="#beta">Записаться</a>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- 1. Первый экран -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <h1 class="display" id="hero-title">Деньги теряются в переписках. LidRadar их находит.</h1>
+          <p class="lead">LidRadar следит за перепиской с клиентами в Telegram и сообщает, где сделка вот-вот сорвётся, пока её ещё можно спасти. А потом показывает, сколько денег вы вернули.</p>
+          <ul class="ticks">
+            <li><span class="ms" aria-hidden="true">check_circle</span>Не отвечает клиентам вместо вас</li>
+            <li><span class="ms" aria-hidden="true">check_circle</span>Считает только рабочее время</li>
+            <li><span class="ms" aria-hidden="true">check_circle</span>Показывает только подтверждённые деньги</li>
+          </ul>
+          <div class="actions">
+            <a class="btn btn--filled btn--lg" href="#beta"><span class="ms" aria-hidden="true">edit_note</span><span>Записаться на бесплатный <span class="nowrap">бета-тест</span></span></a>
+            <a class="btn btn--outlined btn--lg" href="#how">Как это работает</a>
+          </div>
+          <div class="release" role="group" aria-label="Сроки запуска">
+            <div class="release__date" aria-hidden="true">
+              <span class="release__month">октября</span>
+              <span class="release__day">15</span>
+            </div>
+            <div>
+              <p class="release__title">Старт <span class="nowrap">бета-теста</span>&nbsp;— <time class="nowrap" datetime="2026-10-15">15 октября</time></p>
+              <p class="release__sub">Участие бесплатное. Публичный релиз&nbsp;— <time class="nowrap" datetime="2026-11-19">19 ноября</time>. <span id="countdown"></span></p>
+            </div>
+          </div>
+          <p class="trust">Для автосервисов, детейлинга, салонов и других бизнесов услуг</p>
+        </div>
+
+        <div>
+          <div class="scope" role="img" aria-label="Иллюстрация: экран радара, на котором луч подсвечивает три сделки: нет ответа клиенту, клиент молчит после цены, возвращено 12 000 рублей. Демонстрационные данные.">
+            <div class="scope__disc" aria-hidden="true">
+              <div class="scope__grid"></div>
+              <div class="scope__sweep"></div>
+              <span class="blip" style="--x:75.4%; --y:32.2%; --c:#ff5a52; --t:1.22s"></span>
+              <span class="blip" style="--x:38%; --y:82.9%; --c:#f0a03c; --t:4.44s"></span>
+              <span class="blip" style="--x:28.3%; --y:37.5%; --c:#3ddc97; --t:6.67s"></span>
+              <span class="blip blip--dim" style="--x:65.2%; --y:58.8%"></span>
+              <span class="blip blip--dim" style="--x:10.1%; --y:64.5%"></span>
+              <span class="blip blip--dim" style="--x:55.1%; --y:35.9%"></span>
+              <span class="scope__core"></span>
+            </div>
+            <div class="scope__chip scope__chip--a" aria-hidden="true"><span class="dot"></span><span><b>Нет ответа клиенту</b>31 000 ₽, ждёт 60 мин</span></div>
+            <div class="scope__chip scope__chip--b" aria-hidden="true"><span class="dot"></span><span><b>Клиент молчит после цены</b>16 000 ₽</span></div>
+            <div class="scope__chip scope__chip--c" aria-hidden="true"><span class="dot"></span><span><b>Возвращено</b>12 000 ₽</span></div>
+          </div>
+          <p class="cap">Иллюстрация на демонстрационных данных</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1а. Хронология проекта -->
+    <section class="section band" id="timeline" aria-labelledby="timeline-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="timeline-title">Как мы идём к публичному релизу</h2>
+          <p class="lead">Закрытое боевое тестирование стартует 15 октября, открытая регистрация и публичный релиз — 19 ноября.</p>
+        </div>
+
+        <div class="tl__scroll" id="tl-scroll" tabindex="0" role="region" aria-label="Хронология проекта, прокручивается по горизонтали">
+          <ol class="tl" id="tl" role="list">
+            <li class="tl__axis" role="presentation" aria-hidden="true"></li>
+            <li class="tl__year tl__year--a" role="presentation" aria-hidden="true">2026</li>
+            <li class="tl__year tl__year--b" role="presentation" aria-hidden="true">2027</li>
+
+            <li class="tl__item tl__item--top is-done" role="listitem" style="--c:1" data-date="2026-06-02">
+              <div class="tl__label"><time class="tl__date" datetime="2026-06-02">2 июня<span class="sr-only"> 2026 года</span></time><p class="tl__text">Появилась идея</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--bottom is-done" role="listitem" style="--c:2" data-date="2026-06-18">
+              <div class="tl__label"><time class="tl__date" datetime="2026-06-18">18 июня<span class="sr-only"> 2026 года</span></time><p class="tl__text">Определены границы MVP</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--top is-done" role="listitem" style="--c:3" data-date="2026-08-06">
+              <div class="tl__label"><time class="tl__date" datetime="2026-08-06">6 августа<span class="sr-only"> 2026 года</span></time><p class="tl__text">R&amp;D и аудит идеи</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--bottom is-done" role="listitem" style="--c:4" data-date="2026-08-09">
+              <div class="tl__label"><time class="tl__date" datetime="2026-08-09">9 августа<span class="sr-only"> 2026 года</span></time><p class="tl__text">Старт разработки</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--top is-done" role="listitem" style="--c:5" data-date="2026-09-03">
+              <div class="tl__label"><time class="tl__date" datetime="2026-09-03">3 сентября<span class="sr-only"> 2026 года</span></time><p class="tl__text">Поиск рисков: первые успехи на тестовых данных</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--bottom is-done" role="listitem" style="--c:6" data-date="2026-09-30">
+              <div class="tl__label"><time class="tl__date" datetime="2026-09-30">30 сентября<span class="sr-only"> 2026 года</span></time><p class="tl__text">Первые тесты интерфейса на тестовых данных</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--top is-done" role="listitem" style="--c:7" data-date="2026-10-07">
+              <div class="tl__label"><time class="tl__date" datetime="2026-10-07">7 октября<span class="sr-only"> 2026 года</span></time><p class="tl__text">Проверка пользовательских сценариев</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--bottom is-next" role="listitem" style="--c:8" data-date="2026-10-15">
+              <div class="tl__label"><time class="tl__date" datetime="2026-10-15">15 октября<span class="sr-only"> 2026 года</span></time><p class="tl__text">Старт закрытого бета-теста</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--top" role="listitem" style="--c:9" data-date="2026-11-19">
+              <div class="tl__label"><time class="tl__date" datetime="2026-11-19">19 ноября<span class="sr-only"> 2026 года</span></time><p class="tl__text">Релиз и открытая регистрация</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+            <li class="tl__item tl__item--bottom is-pending" role="listitem" style="--c:10" data-date="2027-01-14" data-pending>
+              <div class="tl__label"><time class="tl__date" datetime="2027-01-14">14 января 2027</time><p class="tl__text">Событие ожидает подтверждения</p></div>
+              <span class="tl__dot" aria-hidden="true"></span>
+            </li>
+          </ol>
+        </div>
+        <p class="small tl__hint">Прокрутите вбок, чтобы увидеть все этапы.</p>
+      </div>
+    </section>
+
+    <!-- 2. Проблема -->
+    <section class="section" aria-labelledby="problem-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="problem-title">Самые дорогие потери не видны</h2>
+          <p class="lead">Клиент спросил цену, и в ответ тишина. Записался на завтра и не получил подтверждения. Менеджер пообещал «перезвоню через час» и закрутился. Никто из них не пожаловался. Они просто ушли к тем, кто ответил.</p>
+        </div>
+        <ul class="problems">
+          <li class="problem">
+            <span class="icon-disc icon-disc--high"><span class="ms" aria-hidden="true">mark_chat_unread</span></span>
+            <div>
+              <h3 class="title-lg">Никто не ответил</h3>
+              <p class="body">Сообщение пришло в рабочее время, а ответа нет. Клиент ждёт ровно столько, сколько ему удобно.</p>
+            </div>
+          </li>
+          <li class="problem">
+            <span class="icon-disc icon-disc--high"><span class="ms" aria-hidden="true">event_available</span></span>
+            <div>
+              <h3 class="title-lg">Запись не подтверждена</h3>
+              <p class="body">Клиент готов приехать, но ему так и не написали «Ждём вас в 15:00».</p>
+            </div>
+          </li>
+          <li class="problem">
+            <span class="icon-disc icon-disc--warn"><span class="ms" aria-hidden="true">assignment_late</span></span>
+            <div>
+              <h3 class="title-lg">Обещание забыто</h3>
+              <p class="body">«Пришлю расчёт до вечера». Вечер прошёл, расчёта нет.</p>
+            </div>
+          </li>
+          <li class="problem">
+            <span class="icon-disc icon-disc--warn"><span class="ms" aria-hidden="true">request_quote</span></span>
+            <div>
+              <h3 class="title-lg">Клиент замолчал после цены</h3>
+              <p class="body">Цену назвали, ответа нет, напомнить некому.</p>
+            </div>
+          </li>
+        </ul>
+        <p class="conclusion">Эти потери не попадают в отчёты: сделки, которой «не было», в отчёте нет. Но деньги ушли.</p>
+      </div>
+    </section>
+
+    <!-- 3. Решение -->
+    <section class="section band" aria-labelledby="solution-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="solution-title">LidRadar видит сделки в зоне риска раньше, чем они уйдут</h2>
+        </div>
+        <div class="trio">
+          <div class="trio__item">
+            <span class="icon-disc"><span class="ms" aria-hidden="true">visibility</span></span>
+            <h3 class="title-lg">Видит</h3>
+            <p class="body">Читает переписку в Telegram и понимает, где есть коммерческий интерес: клиент спросил про вашу услугу, получил цену, договаривается о записи.</p>
+          </div>
+          <div class="trio__item">
+            <span class="icon-disc"><span class="ms" aria-hidden="true">notifications_active</span></span>
+            <h3 class="title-lg">Предупреждает</h3>
+            <p class="body">Когда срок вышел, команде приходит сообщение в Telegram: кто клиент, что хотел, на какую сумму сделка и что сделать сейчас.</p>
+          </div>
+          <div class="trio__item">
+            <span class="icon-disc"><span class="ms" aria-hidden="true">payments</span></span>
+            <h3 class="title-lg">Считает</h3>
+            <p class="body">Запоминает, что сделали и чем закончилось. Деньги, которые вернулись, появляются в аналитике, и видно, какие из них пришли после работы с сигналом.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Как это работает -->
+    <section class="section" id="how" aria-labelledby="how-title">
+      <div class="wrap split">
+        <div>
+          <div class="sec-head">
+            <h2 class="headline" id="how-title">Четыре шага от подключения до первых денег</h2>
+          </div>
+          <ol class="steps">
+            <li class="step">
+              <div>
+                <h3 class="title-lg">Подключите Telegram</h3>
+                <p class="body">Подключение идёт через Telegram Business. Менеджеры отвечают клиентам из привычного приложения, как и раньше.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3 class="title-lg">Расскажите о бизнесе</h3>
+                <p class="body">Укажите услуги и цены, рабочие часы каждой точки и в какой срок нужно отвечать. Настройка занимает четыре коротких шага, и её можно продолжить с того места, где остановились.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3 class="title-lg">Получайте сигналы</h3>
+                <p class="body">Радар сам находит сделки в зоне риска. Сообщение приходит тем, кому нужно, и так, как вы настроили.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3 class="title-lg">Действуйте и фиксируйте результат</h3>
+                <p class="body">Позвонили, написали, записали клиента. Отметьте результат. Если клиент оплатил, подтвердите сумму. LidRadar покажет, сколько денег вернулось.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <div>
+          <figure class="ph ph--tall" role="img" aria-label="Заглушка: макет подключения Telegram">
+            <span class="ms" aria-hidden="true">image</span>
+            <figcaption><strong>Макет: подключение Telegram</strong><span class="ph__file">docs/front-end/mockups/preview/05-podkliuchenie-telegram.png</span></figcaption>
+          </figure>
+          <p class="cap">Демонстрационные данные</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Пять сигналов -->
+    <section class="section band" id="signals" aria-labelledby="signals-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="signals-title">О чём предупреждает LidRadar</h2>
+          <p class="lead">Сроки ниже действуют по умолчанию, их можно настроить под ваш бизнес.</p>
+        </div>
+        <ul class="signals">
+          <li class="signal">
+            <div class="signal__what">
+              <span class="icon-disc icon-disc--high"><span class="ms" aria-hidden="true">mark_chat_unread</span></span>
+              <div>
+                <h3 class="title-md">Нет ответа клиенту</h3>
+                <p class="body">Клиент написал, а в рабочее время ему не ответили</p>
+              </div>
+            </div>
+            <p class="signal__when"><span class="ms" aria-hidden="true">schedule</span>Через 45 рабочих минут. Если прошло 90, сигнал становится критическим</p>
+          </li>
+          <li class="signal">
+            <div class="signal__what">
+              <span class="icon-disc icon-disc--high"><span class="ms" aria-hidden="true">event_available</span></span>
+              <div>
+                <h3 class="title-md">Запись не подтверждена</h3>
+                <p class="body">Клиент готов записаться, но подтверждения нет</p>
+              </div>
+            </div>
+            <p class="signal__when"><span class="ms" aria-hidden="true">schedule</span>Через 30 рабочих минут. Всегда критический</p>
+          </li>
+          <li class="signal">
+            <div class="signal__what">
+              <span class="icon-disc icon-disc--warn"><span class="ms" aria-hidden="true">assignment_late</span></span>
+              <div>
+                <h3 class="title-md">Обещание не выполнено</h3>
+                <p class="body">Вы пообещали («через час», «до 18:00», «завтра») и не сделали</p>
+              </div>
+            </div>
+            <p class="signal__when"><span class="ms" aria-hidden="true">schedule</span>В срок из самой фразы, а если срока нет, через 60 минут</p>
+          </li>
+          <li class="signal">
+            <div class="signal__what">
+              <span class="icon-disc icon-disc--warn"><span class="ms" aria-hidden="true">request_quote</span></span>
+              <div>
+                <h3 class="title-md">Клиент молчит после цены</h3>
+                <p class="body">Цену отправили, ответа нет</p>
+              </div>
+            </div>
+            <p class="signal__when"><span class="ms" aria-hidden="true">schedule</span>Через 24 рабочих часа. Через 48 сигнал становится важнее</p>
+          </li>
+          <li class="signal">
+            <div class="signal__what">
+              <span class="icon-disc icon-disc--info"><span class="ms" aria-hidden="true">alarm</span></span>
+              <div>
+                <h3 class="title-md">Пора напомнить</h3>
+                <p class="body">Клиент колебался, и самое время мягко напомнить</p>
+              </div>
+            </div>
+            <p class="signal__when"><span class="ms" aria-hidden="true">schedule</span>Через 24 рабочих часа</p>
+          </li>
+        </ul>
+        <p class="body" style="margin-top:24px">Менеджер ответил или клиент вернулся, и сигнал закрывается сам. Лишних тревог нет.</p>
+        <div class="note">
+          <span class="ms" aria-hidden="true">bedtime</span>
+          <div>
+            <p><strong>Считаем только рабочее время</strong></p>
+            <p>Ночью и в выходные таймер не идёт. У каждой точки свой график, часовой пояс и срок ответа. Утреннее сообщение, на которое вы ответили в 9:05 после открытия, не станет «просрочкой».</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Radar -->
+    <section class="section" id="radar" aria-labelledby="radar-title">
+      <div class="wrap split">
+        <div>
+          <h2 class="headline" id="radar-title">Один экран, чтобы понять, кого спасать первым</h2>
+          <p class="lead" style="margin-top:16px">Вверху видно, сколько клиентов сейчас под риском и на какую сумму, и сколько денег уже вернулось. Ниже список сигналов: сверху самые срочные и самые дорогие. Можно отфильтровать по важности, типу сигнала и точке. Список обновляется сам.</p>
+          <article class="risk-card" aria-label="Пример сигнала в списке (демонстрационные данные)">
+            <div class="risk-card__tags">
+              <span class="badge badge--high">Высокий</span>
+              <span class="badge badge--neutral">Нет ответа клиенту</span>
+            </div>
+            <div class="risk-card__row">
+              <div>
+                <p class="risk-card__name">Дмитрий</p>
+                <p class="small">Полировка кузова</p>
+              </div>
+              <p class="risk-card__amount">31 000 ₽</p>
+            </div>
+            <p class="risk-card__wait"><span class="ms" aria-hidden="true">schedule</span>Ждёт ответа 60 мин, срок вышел</p>
+          </article>
+        </div>
+        <div>
+          <figure class="ph" role="img" aria-label="Заглушка: макет экрана Radar">
+            <span class="ms" aria-hidden="true">image</span>
+            <figcaption><strong>Макет: Radar</strong><span class="ph__file">docs/front-end/mockups/preview/17-radar-osnovnoi.png</span></figcaption>
+          </figure>
+          <p class="cap">Демонстрационные данные</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Карточка сигнала -->
+    <section class="section band" aria-labelledby="card-title">
+      <div class="wrap split split--rev">
+        <div>
+          <h2 class="headline" id="card-title">Не просто тревога, а понятный план</h2>
+          <ul class="points" style="margin-top:32px">
+            <li class="point">
+              <span class="ms" aria-hidden="true">psychology</span>
+              <div>
+                <h3 class="title-md">Почему это риск</h3>
+                <p class="body">Объяснение простыми словами: что случилось, когда обнаружено, сколько ждёт клиент.</p>
+              </div>
+            </li>
+            <li class="point">
+              <span class="ms" aria-hidden="true">forum</span>
+              <div>
+                <h3 class="title-md">Что в переписке</h3>
+                <p class="body">Последнее сообщение клиента, услуга и этап сделки. Переписка открывается в Telegram, а отвечает человек.</p>
+              </div>
+            </li>
+            <li class="point">
+              <span class="ms" aria-hidden="true">tune</span>
+              <div>
+                <h3 class="title-md">Что делать</h3>
+                <p class="body">Подсказка по типу сигнала, например: «Ответьте клиенту и назовите цену».</p>
+              </div>
+            </li>
+            <li class="point">
+              <span class="ms" aria-hidden="true">history</span>
+              <div>
+                <h3 class="title-md">Действие и результат</h3>
+                <p class="body">Отметьте, что сделали и чем закончилось. История сохраняется и не стирается задним числом.</p>
+              </div>
+            </li>
+            <li class="point">
+              <span class="ms" aria-hidden="true">fact_check</span>
+              <div>
+                <h3 class="title-md">Оценка сигнала</h3>
+                <p class="body">«Подтвердился» или «ложное срабатывание» с причиной. Это помогает настраивать правила.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <figure class="ph" role="img" aria-label="Заглушка: макет карточки сигнала">
+            <span class="ms" aria-hidden="true">image</span>
+            <figcaption><strong>Макет: карточка сигнала</strong><span class="ph__file">docs/front-end/mockups/preview/18-kartochka-riska.png</span></figcaption>
+          </figure>
+          <p class="cap">Демонстрационные данные</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Деньги -->
+    <section class="section" id="money" aria-labelledby="money-title">
+      <div class="wrap split split--top">
+        <div>
+          <h2 class="headline" id="money-title">Цифры, которые не стыдно показать собственнику</h2>
+          <p class="lead" style="margin-top:16px">В аналитике нет «примерно» и «потенциально сэкономили». Выручка попадает туда только тогда, когда сотрудник подтвердил сумму. Видно, какие деньги вернулись после работы с сигналом, а какие пришли сами.</p>
+          <div class="buckets">
+            <div class="bucket bucket--ok"><p><strong>Возвращено после работы с риском</strong>Есть цепочка: сигнал, действие, результат, оплата в течение 30 дней.</p></div>
+            <div class="bucket bucket--neutral"><p><strong>Оплата без связи с риском</strong>Клиент заплатил и без нашей помощи.</p></div>
+            <div class="bucket bucket--unknown"><p><strong>Связь пока не определена</strong>Честно показываем и такие суммы.</p></div>
+          </div>
+          <ul class="promises">
+            <li><span class="ms" aria-hidden="true">check</span>Суммы считаются точно, без округлений и расхождений копеек</li>
+            <li><span class="ms" aria-hidden="true">check</span>Повторное нажатие не задвоит выручку</li>
+            <li><span class="ms" aria-hidden="true">check</span>Разные валюты не складываются</li>
+          </ul>
+        </div>
+        <div>
+          <figure class="ph" role="img" aria-label="Заглушка: макет аналитики">
+            <span class="ms" aria-hidden="true">image</span>
+            <figcaption><strong>Макет: аналитика</strong><span class="ph__file">docs/front-end/mockups/preview/07-analitika.png</span></figcaption>
+          </figure>
+          <div class="stats" role="group" aria-label="Пример аналитики за неделю (демонстрационные данные)">
+            <div class="stat"><p class="stat__n">24</p><p class="stat__l">найдено сигналов</p></div>
+            <div class="stat"><p class="stat__n">18</p><p class="stat__l">команда отреагировала</p></div>
+            <div class="stat"><p class="stat__n">11</p><p class="stat__l">сигналов закрыто</p></div>
+            <div class="stat stat--money"><p class="stat__n">147 000 ₽</p><p class="stat__l">возвращено и подтверждено</p></div>
+          </div>
+          <p class="cap">Демонстрационные данные за неделю. Показатели считаются по разным выборкам, это не стадии одной воронки.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Принципы -->
+    <section class="section band" id="principles" aria-labelledby="principles-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="principles-title">Чего LidRadar не делает и почему это хорошо</h2>
+          <p class="lead">Мы делаем одну вещь: возвращаем деньги, которые вы уже почти заработали. Остального не касаемся.</p>
+        </div>
+        <ul class="rules">
+          <li class="rule">
+            <h3 class="title-md rule__no"><span class="ms" aria-hidden="true">comments_disabled</span>Не пишет клиентам</h3>
+            <p class="body">Клиент общается с вашим человеком, а не с ботом. Бот не наговорит лишнего от вашего имени.</p>
+          </li>
+          <li class="rule">
+            <h3 class="title-md rule__no"><span class="ms" aria-hidden="true">block</span>Не продаёт вместо вас</h3>
+            <p class="body">Решения о цене, скидке и записи остаются за командой.</p>
+          </li>
+          <li class="rule">
+            <h3 class="title-md rule__no"><span class="ms" aria-hidden="true">dashboard</span>Не заменяет CRM</h3>
+            <p class="body">Не нужно переносить базу и перестраивать процессы. LidRadar работает рядом.</p>
+          </li>
+          <li class="rule">
+            <h3 class="title-md rule__no"><span class="ms" aria-hidden="true">sync</span>Не просит менять привычки</h3>
+            <p class="body">Менеджеры отвечают из того же Telegram. Нового приложения для переписки нет.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 10. AI -->
+    <section class="section" id="ai" aria-labelledby="ai-title">
+      <div class="wrap split split--top">
+        <div>
+          <h2 class="headline" id="ai-title">Умный помощник, но не начальник</h2>
+          <p class="lead" style="margin-top:16px">LidRadar использует искусственный интеллект там, где он силён: читает переписку и вытаскивает факты. Назвали цену. Клиент хочет записаться. Пообещали перезвонить. Нужно напомнить. Решение, считать ли это риском, принимают понятные правила, а не «чёрный ящик».</p>
+          <div class="quality" role="group" aria-label="Результат внутреннего теста AI">
+            <div class="stat"><p class="stat__n">96%</p><p class="stat__l">нужных фактов нашёл AI</p></div>
+            <div class="stat"><p class="stat__n">95%</p><p class="stat__l">найденных фактов оказались верными</p></div>
+          </div>
+          <p class="small">Внутренний тест из 400 размеченных диалогов. Диалоги синтетические, не данные клиентов.</p>
+        </div>
+        <ul class="points">
+          <li class="point">
+            <span class="ms" aria-hidden="true">fact_check</span>
+            <div>
+              <h3 class="title-md">Каждый факт подкреплён сообщениями</h3>
+              <p class="body">Видно, на чём основан вывод.</p>
+            </div>
+          </li>
+          <li class="point">
+            <span class="ms" aria-hidden="true">error</span>
+            <div>
+              <h3 class="title-md">Сомневается, не гадает</h3>
+              <p class="body">Если AI не уверен, факт не используется.</p>
+            </div>
+          </li>
+          <li class="point">
+            <span class="ms" aria-hidden="true">rule</span>
+            <div>
+              <h3 class="title-md">Правила прозрачны</h3>
+              <p class="body">Для каждого сигнала видно, по какому правилу он появился.</p>
+            </div>
+          </li>
+          <li class="point">
+            <span class="ms" aria-hidden="true">shield_lock</span>
+            <div>
+              <h3 class="title-md">Анализ на собственном оборудовании</h3>
+              <p class="body">Переписки не уходят в сторонние AI-сервисы. Модель получает только текст последних сообщений, без карточки клиента, контактов, сумм и данных о сделках.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 11. Уведомления -->
+    <section class="section band" id="notifications" aria-labelledby="notify-title">
+      <div class="wrap split">
+        <div>
+          <h2 class="headline" id="notify-title">Столько шума, сколько нужно</h2>
+          <p class="lead" style="margin-top:16px">У каждого сотрудника свои настройки. Срочное можно получать сразу, остальное сводкой раз в день, ненужное отключить. Отключили уведомления, а поиск сигналов продолжается: сигнал остаётся в Radar.</p>
+          <ul class="points" style="margin-top:28px">
+            <li class="point"><span class="ms" aria-hidden="true">notifications_active</span><p class="body">Для каждого типа сигнала: сразу, сводкой или не присылать</p></li>
+            <li class="point"><span class="ms" aria-hidden="true">tune</span><p class="body">Минимальная важность</p></li>
+            <li class="point"><span class="ms" aria-hidden="true">bedtime</span><p class="body">Тихие часы, в том числе через полночь</p></li>
+            <li class="point"><span class="ms" aria-hidden="true">schedule</span><p class="body">Время утренней сводки: одно сообщение вместо россыпи</p></li>
+          </ul>
+          <p class="title-md" style="margin-top:28px">Кнопки в Telegram-сообщении</p>
+          <div class="tags"><span class="tag">Открыть</span><span class="tag">Взять в работу</span><span class="tag">Отложить</span></div>
+        </div>
+        <div>
+          <figure class="ph" role="img" aria-label="Заглушка: макет настроек уведомлений">
+            <span class="ms" aria-hidden="true">image</span>
+            <figcaption><strong>Макет: настройки уведомлений</strong><span class="ph__file">docs/front-end/mockups/preview/11-nastroiki-uvedomlenii.png</span></figcaption>
+          </figure>
+          <p class="cap">Демонстрационные данные</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. Для кого -->
+    <section class="section" id="audience" aria-labelledby="who-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="who-title">Каждому своё</h2>
+        </div>
+        <div class="who">
+          <div class="who__item">
+            <span class="icon-disc"><span class="ms" aria-hidden="true">visibility</span></span>
+            <h3 class="title-lg">Владельцу</h3>
+            <p class="body">Вы видите, где теряются деньги и сколько удалось вернуть, и не читаете переписки. Аналитика и настройки доступны вам.</p>
+          </div>
+          <div class="who__item">
+            <span class="icon-disc"><span class="ms" aria-hidden="true">support_agent</span></span>
+            <h3 class="title-lg">Менеджеру</h3>
+            <p class="body">Вас предупреждают о том, что нельзя забыть. Сразу понятно, что делать. Один тап из Telegram, и вы в нужной карточке.</p>
+          </div>
+          <div class="who__item">
+            <span class="icon-disc"><span class="ms" aria-hidden="true">storefront</span></span>
+            <h3 class="title-lg">Сети точек</h3>
+            <p class="body">У каждой точки свой график, часовой пояс и срок ответа. Сигналы видны по всем точкам, фильтруются по каждой.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. Безопасность -->
+    <section class="section band" id="security" aria-labelledby="security-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="security-title">Переписки клиентов под защитой</h2>
+        </div>
+        <div class="safety">
+          <div class="safety__item">
+            <span class="ms" aria-hidden="true">database</span>
+            <div>
+              <h3 class="title-md">Данные компаний изолированы</h3>
+              <p class="body">Защита встроена на уровне базы данных: данные одной компании не видны другой.</p>
+            </div>
+          </div>
+          <div class="safety__item">
+            <span class="ms" aria-hidden="true">admin_panel_settings</span>
+            <div>
+              <h3 class="title-md">Роли и права</h3>
+              <p class="body">Владелец управляет всем. Менеджеру доступны только рабочие разделы.</p>
+            </div>
+          </div>
+          <div class="safety__item">
+            <span class="ms" aria-hidden="true">group</span>
+            <div>
+              <h3 class="title-md">Сотрудник ушёл, доступ закрыт мгновенно</h3>
+              <p class="body">История его действий остаётся. Приглашение в команду действует по одноразовому коду 7 дней. Нельзя случайно остаться без владельца.</p>
+            </div>
+          </div>
+          <div class="safety__item">
+            <span class="ms" aria-hidden="true">key</span>
+            <div>
+              <h3 class="title-md">Ключи и пароли зашифрованы</h3>
+              <p class="body">Токен Telegram вводится один раз и дальше не показывается. Пароли хранятся в защищённом виде. Подбор пароля ограничивается.</p>
+            </div>
+          </div>
+          <div class="safety__item">
+            <span class="ms" aria-hidden="true">history</span>
+            <div>
+              <h3 class="title-md">Журнал действий</h3>
+              <p class="body">Кто и что сделал, записывается и не меняется задним числом.</p>
+            </div>
+          </div>
+          <div class="safety__item">
+            <span class="ms" aria-hidden="true">verified_user</span>
+            <div>
+              <h3 class="title-md">Данные не уходят в обучение без вас</h3>
+              <p class="body">Использовать ваши переписки для развития моделей можно только с согласия владельца. Согласие отзывается, а по умолчанию его нет.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14. Надёжность -->
+    <section class="section" id="reliability" aria-labelledby="reliability-title">
+      <div class="wrap split split--top">
+        <div>
+          <h2 class="headline" id="reliability-title">Ничего не теряется</h2>
+          <p class="lead" style="margin-top:16px">LidRadar построен так, чтобы сбой в одном месте не ронял остальное.</p>
+          <p class="callout"><strong>Проверено на модели:</strong> 100 компаний, 50 000 переписок, 500 000 сообщений. Внутренний тест на синтетических данных.</p>
+        </div>
+        <ul class="points">
+          <li class="point">
+            <span class="ms" aria-hidden="true">database</span>
+            <div>
+              <h3 class="title-md">Сначала сохраняем, потом разбираем</h3>
+              <p class="body">Каждое сообщение записывается до обработки, поэтому не пропадёт, даже если разбор отложился.</p>
+            </div>
+          </li>
+          <li class="point">
+            <span class="ms" aria-hidden="true">sync</span>
+            <div>
+              <h3 class="title-md">Telegram или AI недоступны</h3>
+              <p class="body">Сигналы и деньги остаются на месте. Сообщение дойдёт, когда связь восстановится.</p>
+            </div>
+          </li>
+          <li class="point">
+            <span class="ms" aria-hidden="true">check_circle</span>
+            <div>
+              <h3 class="title-md">Повтор безопасен</h3>
+              <p class="body">Двойная доставка не создаст дубль сигнала или выручки.</p>
+            </div>
+          </li>
+          <li class="point">
+            <span class="ms" aria-hidden="true">visibility</span>
+            <div>
+              <h3 class="title-md">Видно, что происходит</h3>
+              <p class="body">У платформы есть панель состояния очередей и каналов, без доступа к тексту переписок.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 15. Бета-тест и форма -->
+    <section class="section beta" id="beta" aria-labelledby="beta-title">
+      <div class="wrap beta__grid">
+        <div>
+          <h2 class="headline" id="beta-title">Запишитесь на бесплатный бета-тест</h2>
+          <p class="lead beta__lead" style="color:inherit">Закрытое боевое тестирование LidRadar стартует 15 октября, публичный релиз — 19 ноября. Для первых компаний участие бесплатное: подключим Telegram, настроим радар под ваш бизнес вместе с вами и будем считать, сколько денег удалось вернуть.</p>
+          <ul class="beta__list">
+            <li><span class="ms" aria-hidden="true">check_circle</span><span>Участие в бета-тесте бесплатное</span></li>
+            <li><span class="ms" aria-hidden="true">check_circle</span><span>Помощь с настройкой от команды LidRadar</span></li>
+            <li><span class="ms" aria-hidden="true">check_circle</span><span>Прямая связь с командой и влияние на развитие продукта</span></li>
+          </ul>
+          <p class="beta__fit"><strong>Кому подходит.</strong> Бизнесу услуг, где клиенты первыми пишут в Telegram, а заявки время от времени теряются.</p>
+        </div>
+
+        <div class="form-card">
+          <div id="form-head">
+            <h3 class="title-lg" id="form-title">Заявка на бета-тест</h3>
+            <p class="small" style="margin-top:6px">Это займёт минуту. Свяжемся с вами по указанному контакту.</p>
+          </div>
+
+          <form class="form" id="beta-form" novalidate aria-labelledby="form-title">
+            <div class="field">
+              <input class="field__input" id="f-name" name="name" type="text" placeholder=" " autocomplete="name" required aria-describedby="e-name">
+              <label class="field__label" for="f-name">Имя</label>
+              <p class="field__msg" id="e-name" role="alert"></p>
+            </div>
+
+            <div class="field">
+              <input class="field__input" id="f-company" name="company" type="text" placeholder=" " autocomplete="organization" required aria-describedby="e-company">
+              <label class="field__label" for="f-company">Компания</label>
+              <p class="field__msg" id="e-company" role="alert"></p>
+            </div>
+
+            <fieldset class="choice" id="f-business" aria-describedby="e-business">
+              <legend class="choice__legend">Чем занимаетесь</legend>
+              <div class="choice__row">
+                <label class="chip"><input class="chip__input" type="radio" name="business" value="Автосервис" required><span class="chip__face"><span class="ms" aria-hidden="true">check</span>Автосервис</span></label>
+                <label class="chip"><input class="chip__input" type="radio" name="business" value="Детейлинг"><span class="chip__face"><span class="ms" aria-hidden="true">check</span>Детейлинг</span></label>
+                <label class="chip"><input class="chip__input" type="radio" name="business" value="Салон красоты"><span class="chip__face"><span class="ms" aria-hidden="true">check</span>Салон красоты</span></label>
+                <label class="chip"><input class="chip__input" type="radio" name="business" value="Другое"><span class="chip__face"><span class="ms" aria-hidden="true">check</span>Другое</span></label>
+              </div>
+              <p class="field__msg" id="e-business" role="alert"></p>
+            </fieldset>
+
+            <div class="field">
+              <input class="field__input" id="f-contact" name="contact" type="text" placeholder=" " autocomplete="tel" inputmode="text" required aria-describedby="h-contact e-contact">
+              <label class="field__label" for="f-contact">Telegram или телефон</label>
+              <p class="field__help" id="h-contact">Например, @username или +7 900 000-00-00</p>
+              <p class="field__msg" id="e-contact" role="alert"></p>
+            </div>
+
+            <div class="field">
+              <input class="field__input" id="f-locations" name="locations" type="number" min="1" max="999" inputmode="numeric" placeholder=" " aria-describedby="h-locations e-locations">
+              <label class="field__label" for="f-locations">Сколько у вас точек</label>
+              <p class="field__help" id="h-locations">Необязательно</p>
+              <p class="field__msg" id="e-locations" role="alert"></p>
+            </div>
+
+            <div class="hp" aria-hidden="true">
+              <label>Не заполняйте это поле<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+            </div>
+
+            <div>
+              <label class="consent" id="consent-label">
+                <input type="checkbox" name="consent" id="f-consent" required aria-describedby="e-consent">
+                <span>Согласен на обработку персональных данных. <span class="todo" title="Заполнить">[ССЫЛКА НА ПОЛИТИКУ КОНФИДЕНЦИАЛЬНОСТИ]</span></span>
+              </label>
+              <p class="consent-msg" id="e-consent" role="alert"></p>
+            </div>
+
+            <div class="form-error" id="form-error" role="alert">
+              <span class="ms" aria-hidden="true">error</span>
+              <p>Не получилось отправить заявку. Проверьте соединение и попробуйте ещё раз или напишите нам: <span class="todo" title="Заполнить">[КОНТАКТ]</span></p>
+            </div>
+
+            <button class="btn btn--filled btn--lg btn--block" type="submit" id="submit-btn"><span class="ms" aria-hidden="true">send</span><span id="submit-label">Записаться на бета-тест</span></button>
+          </form>
+
+          <div class="form-done" id="form-done" hidden tabindex="-1" role="status">
+            <span class="icon-disc icon-disc--ok"><span class="ms ms--fill" aria-hidden="true">check_circle</span></span>
+            <h3 class="title-lg">Вы в списке</h3>
+            <p class="body" id="done-text">Спасибо! Мы свяжемся с вами по указанному контакту. Бета-тест стартует 15 октября.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16. FAQ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 class="headline" id="faq-title">Частые вопросы</h2>
+        </div>
+        <div class="faq">
+          <details class="faq__item">
+            <summary class="faq__q">LidRadar будет отвечать моим клиентам?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Нет, никогда. Ни автоответов, ни «умного ассистента». Все ответы клиентам пишут ваши сотрудники из привычного Telegram. LidRadar подсказывает, где и когда это нужно сделать.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Нужно ли менять мессенджер или CRM?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Нет. Менеджеры продолжают работать в Telegram. LidRadar подключается через Telegram Business и не требует переносить клиентскую базу. Он не CRM и не пытается её заменить.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Откуда LidRadar знает, что сообщение важное?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Сообщение становится коммерческой возможностью, когда клиент упоминает вашу услугу из каталога. Поэтому на старте вы указываете услуги и цены. Сообщения, где вашей услуги нет, тревог не создают.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Менеджер уже ответил, а тревога пришла?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Ответ менеджера закрывает сигнал автоматически. Если сигнал всё же оказался лишним, отметьте «ложное срабатывание» и выберите причину.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Читает ли LidRadar фото, голосовые и файлы?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Сегодня анализируется текст сообщений. Фото, голосовые и файлы учитываются как факт, что они были, но их содержимое не анализируется и не хранится.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Как считаются возвращённые деньги?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Только по подтверждению сотрудника. Выручка считается «возвращённой», если есть цепочка: сигнал, действие, результат, оплата в течение 30 дней. Остальные суммы показываются отдельно.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Кто видит переписки?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Сотрудники вашей компании в рамках своих ролей. Сотрудники других компаний не видят их никогда. Служебная панель платформы показывает состояние очередей и каналов, а не содержимое переписок.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Вы используете мои данные для обучения AI?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Только если владелец компании даст явное согласие. Оно по умолчанию выключено и отзывается в любой момент.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Что, если Telegram или AI временно недоступны?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Работа продолжается: сигналы остаются в Radar, деньги не теряются. Сообщения дойдут после восстановления связи.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Можно подключить несколько точек?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Да. У каждой точки свой график, часовой пояс и срок ответа.</p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Как быстро можно запуститься?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Настройка проходит в четыре шага: компания и точка, рабочие часы, услуги и цены, подключение Telegram. <span class="todo" title="Заполнить после бета-теста">[ЕСЛИ БЕТА-ТЕСТ ПОДТВЕРДИТ: «В среднем N минут»]</span></p>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">Сколько это стоит?<span class="ms" aria-hidden="true">expand_more</span></summary>
+            <p class="faq__a">Бета-тест бесплатный. <span class="todo" title="Заполнить">[УСЛОВИЯ ПОСЛЕ БЕТА-ТЕСТА]</span></p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17. Финальный призыв -->
+    <section class="section band final" aria-labelledby="final-title">
+      <div class="wrap">
+        <h2 class="headline" id="final-title">Узнайте, сколько денег уходит в ваших переписках</h2>
+        <p class="lead body">Каждое неотвеченное сообщение — это сделка, которая могла состояться. Давайте посмотрим, сколько их у вас.</p>
+        <a class="btn btn--filled btn--lg" href="#beta">Записаться на бета-тест</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer__grid">
+        <div>
+          <a class="brand" href="#top" aria-label="LidRadar, в начало страницы">
+            <svg class="brand__mark" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M12 12 19 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+            </svg>
+            <span>LidRadar</span>
+          </a>
+          <p style="margin-top:12px">Радар упущенной выручки</p>
+        </div>
+        <div>
+          <p class="footer__title">Контакты</p>
+          <p><span class="todo" title="Заполнить">[E-MAIL]</span></p>
+          <p><span class="todo" title="Заполнить">[TELEGRAM]</span></p>
+          <p><span class="todo" title="Заполнить">[ТЕЛЕФОН]</span></p>
+        </div>
+        <div>
+          <p class="footer__title">Документы</p>
+          <p><span class="todo" title="Заполнить">[ЮРИДИЧЕСКОЕ ЛИЦО, РЕКВИЗИТЫ]</span></p>
+          <p><span class="todo" title="Заполнить">[ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ]</span></p>
+        </div>
+      </div>
+      <p class="footer__fine">Интерфейс на изображениях показан на демонстрационных данных.</p>
+    </div>
+  </footer>
+
+  <div class="snackbar" id="snackbar" role="status" aria-live="polite">
+    <span class="ms" aria-hidden="true">check_circle</span>
+    <span id="snackbar-text"></span>
+  </div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
