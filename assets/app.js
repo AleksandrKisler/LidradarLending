@@ -1,10 +1,12 @@
 (function () {
   "use strict";
 
-  /* Адрес приёма заявок на бета-тест. Пока пусто: форма проверяет данные и показывает
-     успех, но ничего не отправляет (режим черновика). Укажите URL, который принимает
-     POST с JSON, например "https://example.com/api/beta". */
-  var FORM_ENDPOINT = "";
+  /* Адрес приёма заявок на бета-тест: веб-приложение Google Apps Script, которое дописывает
+     строку в Google Таблицу. Адрес оканчивается на /exec. Код и инструкция по подключению:
+     integrations/google-sheets/README.md.
+     Пока пусто: на своём компьютере (localhost, файл) форма показывает успех для проверки вёрстки,
+     а на сайте покажет ошибку, чтобы заявки не терялись молча. */
+  var FORM_ENDPOINT = "https://script.google.com/macros/s/AKfycbwEy_zrLOW7TmdI8cnoweAQ3RrOvLugyNZUSSeDkVvuwA1zClmgXcfd14No1a7WvRb9rA/exec";
 
   /* Дата релиза: 15 октября 2026 (месяцы в JS с нуля) */
   var RELEASE = new Date(2026, 9, 15);
@@ -137,28 +139,50 @@
     }
   }
 
-  function isContactValid(value) {
-    var v = value.trim();
-    if (/^(https?:\/\/)?t\.me\/[A-Za-z][A-Za-z0-9_]{4,31}\/?$/.test(v)) return true;
-    if (/^@?[A-Za-z][A-Za-z0-9_]{4,31}$/.test(v)) return true;
-    var digits = v.replace(/[\s()+\-.]/g, "");
-    return /^\d{10,15}$/.test(digits) && /^[\d\s()+\-.]+$/.test(v);
+  /* Правила проверки имени, компании и контакта лежат в assets/validate.js: те же правила
+     повторяет скрипт Google, поэтому заявку нельзя обойти прямым запросом. */
+  var V = window.LidRadarValidate;
+
+  var MESSAGES = {
+    name: {
+      empty: "Укажите имя",
+      short: "Имя слишком короткое: нужно хотя бы две буквы",
+      long: "Слишком длинное имя: не больше 60 знаков",
+      chars: "В имени допустимы только буквы, пробел, дефис и апостроф",
+      gibberish: "Это не похоже на имя. Проверьте, пожалуйста"
+    },
+    company: {
+      empty: "Укажите название компании",
+      short: "Название слишком короткое: нужно хотя бы две буквы",
+      long: "Слишком длинное название: не больше 100 знаков",
+      chars: "В названии лишние символы: уберите ссылки и спецсимволы",
+      gibberish: "Это не похоже на название компании. Проверьте, пожалуйста"
+    },
+    contact: {
+      empty: "Укажите Telegram или email",
+      long: "Слишком длинный контакт",
+      phone: "Телефон не принимаем: укажите Telegram (@username) или email",
+      placeholder: "Укажите свой настоящий Telegram или email, а не пример",
+      format: "Проверьте контакт: нужен Telegram вида @username или email вида name@example.com"
+    }
+  };
+
+  /* Текст ошибки для поля или пустая строка, если всё в порядке */
+  function problem(kind, value) {
+    var result = kind === "name" ? V.checkName(value) : kind === "company" ? V.checkCompany(value) : V.checkContact(value);
+    return result.ok ? "" : MESSAGES[kind][result.reason] || MESSAGES[kind].empty;
   }
 
   var checks = [
     {
       field: function () { return $("f-name").closest(".field"); },
       msg: "e-name",
-      run: function () {
-        return $("f-name").value.trim() ? "" : "Укажите имя";
-      }
+      run: function () { return problem("name", $("f-name").value); }
     },
     {
       field: function () { return $("f-company").closest(".field"); },
       msg: "e-company",
-      run: function () {
-        return $("f-company").value.trim() ? "" : "Укажите название компании";
-      }
+      run: function () { return problem("company", $("f-company").value); }
     },
     {
       field: function () { return $("f-business"); },
@@ -170,11 +194,7 @@
     {
       field: function () { return $("f-contact").closest(".field"); },
       msg: "e-contact",
-      run: function () {
-        var v = $("f-contact").value;
-        if (!v.trim()) return "Укажите Telegram или телефон";
-        return isContactValid(v) ? "" : "Проверьте контакт: нужен Telegram вида @username или телефон с кодом";
-      }
+      run: function () { return problem("contact", $("f-contact").value); }
     },
     {
       field: function () { return $("f-locations").closest(".field"); },
@@ -216,6 +236,7 @@
 
   /* Ошибка пропадает, как только человек начал её исправлять */
   form.addEventListener("input", function (e) {
+    attemptId = null; /* данные изменились: это уже новая заявка, а не повтор прошлой попытки */
     var field = e.target.closest(".field, .choice");
     if (field && field.classList.contains("is-invalid")) {
       var check = checks.find(function (c) { return c.field() === field; });
@@ -228,6 +249,76 @@
     }
     formError.classList.remove("is-visible");
   });
+
+  /* Номер заявки: при повторной отправке после сбоя связи сервер не создаст вторую строку.
+     Пока человек ничего не менял, номер остаётся прежним. */
+  var attemptId = null;
+  function newId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+    return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+  }
+
+  /* Откуда пришёл человек: метки рекламы и сайт-источник. Помогают понять, какой канал работает. */
+  function utmLabel() {
+    try {
+      var q = new URLSearchParams(window.location.search);
+      return ["utm_source", "utm_medium", "utm_campaign"]
+        .map(function (k) { return q.get(k) || ""; })
+        .filter(Boolean)
+        .join(" / ");
+    } catch (err) {
+      return "";
+    }
+  }
+  function referrerHost() {
+    try {
+      var host = document.referrer ? new URL(document.referrer).hostname : "";
+      return host === window.location.hostname ? "" : host;
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function isLocalPreview() {
+    var h = window.location.hostname;
+    return window.location.protocol === "file:" || h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h === "";
+  }
+
+  /* Отправка заявки. Content-Type text/plain делает запрос «простым»: браузер не посылает
+     предварительный запрос CORS, которого Apps Script не поддерживает. Тело всё равно JSON. */
+  function sendLead(payload) {
+    if (!FORM_ENDPOINT) {
+      if (isLocalPreview()) {
+        console.warn("[LidRadar] FORM_ENDPOINT не задан в assets/app.js: заявка никуда не отправлена (режим проверки вёрстки).", payload);
+        return Promise.resolve();
+      }
+      console.error("[LidRadar] FORM_ENDPOINT не задан в assets/app.js: заявка не отправлена.");
+      return Promise.reject(new Error("FORM_ENDPOINT is empty"));
+    }
+
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = controller ? window.setTimeout(function () { controller.abort(); }, 20000) : 0;
+    var done = function () { if (timer) window.clearTimeout(timer); };
+
+    return fetch(FORM_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+      redirect: "follow",
+      signal: controller ? controller.signal : undefined
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (answer) {
+        if (!answer || answer.ok !== true) throw new Error("Сервер отклонил заявку: " + (answer && answer.error));
+      })
+      .then(
+        function () { done(); },
+        function (err) { done(); throw err; }
+      );
+  }
 
   function setBusy(busy) {
     submitBtn.disabled = busy;
@@ -261,36 +352,31 @@
       return;
     }
 
+    if (!attemptId) attemptId = newId();
+    /* В таблицу уходят значения в едином виде: без лишних пробелов, Telegram как @имя, email строчными */
     var payload = {
-      name: String(data.get("name")).trim(),
-      company: String(data.get("company")).trim(),
+      id: attemptId,
+      name: V.checkName(data.get("name")).value,
+      company: V.checkCompany(data.get("company")).value,
       business: String(data.get("business")),
-      contact: String(data.get("contact")).trim(),
+      contact: V.checkContact(data.get("contact")).value,
       locations: data.get("locations") ? Number(data.get("locations")) : null,
       consent: true,
       source: "landing",
+      utm: utmLabel(),
+      referrer: referrerHost(),
       submittedAt: new Date().toISOString()
     };
 
     setBusy(true);
 
-    var request;
-    if (FORM_ENDPOINT) {
-      request = fetch(FORM_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }).then(function (res) {
-        if (!res.ok) throw new Error("HTTP " + res.status);
-      });
-    } else {
-      console.warn("[LidRadar] FORM_ENDPOINT не задан в assets/app.js: заявка никуда не отправлена.", payload);
-      request = Promise.resolve();
-    }
-
-    request
-      .then(function () { showDone(payload.name); })
-      .catch(function () {
+    sendLead(payload)
+      .then(function () {
+        attemptId = null;
+        showDone(payload.name);
+      })
+      .catch(function (err) {
+        console.error("[LidRadar] Заявка не отправлена:", err);
         formError.classList.add("is-visible");
         formError.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
       })
