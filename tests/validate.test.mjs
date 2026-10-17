@@ -1,9 +1,8 @@
 /**
  * Проверка правил валидации формы: имя, компания, контакт (Telegram или email).
- * Запуск: node --test integrations/google-sheets/validate.test.mjs   (Node 20+)
+ * Запуск: node --test   (Node 20+)
  *
- * Те же правила работают в двух местах: assets/validate.js (на сайте) и блок validate-core в Code.gs
- * (в скрипте Google). Тест гоняет один набор примеров через оба и следит, чтобы блоки были одинаковыми.
+ * Те же правила (assets/validate.js) работают в браузере и в server.mjs, который принимает заявки.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,30 +11,14 @@ import fs from 'node:fs';
 
 const ZW = String.fromCharCode(0x200b); // невидимый пробел нулевой ширины
 const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
-const VALIDATE_JS = read('../../assets/validate.js');
-const CODE_GS = read('./Code.gs');
+const VALIDATE_JS = read('../assets/validate.js');
 
 function loadSite() {
   const ctx = vm.createContext({});
   vm.runInContext(VALIDATE_JS, ctx, { filename: 'validate.js' });
   return ctx.LidRadarValidate;
 }
-function loadScript() {
-  const ctx = vm.createContext({ console, ContentService: {}, SpreadsheetApp: {}, LockService: {}, CacheService: {}, MailApp: {}, Utilities: {} });
-  vm.runInContext(CODE_GS, ctx, { filename: 'Code.gs' });
-  return ctx.LidRadarValidate;
-}
-const implementations = { 'сайт (assets/validate.js)': loadSite(), 'скрипт Google (Code.gs)': loadScript() };
-
-const coreOf = (source) => {
-  const m = source.match(/\/\* BEGIN validate-core \*\/([\s\S]*?)\/\* END validate-core \*\//);
-  assert.ok(m, 'в файле нет блока validate-core');
-  return m[1].split('\n').map((line) => line.trim()).filter(Boolean).join('\n');
-};
-
-test('блок validate-core на сайте и в Code.gs одинаковый', () => {
-  assert.equal(coreOf(CODE_GS), coreOf(VALIDATE_JS));
-});
+const implementations = { 'сайт (assets/validate.js)': loadSite() };
 
 const NAMES_OK = [
   'Дмитрий', 'Дмитрий Соколов', 'Анна-Мария Петрова', 'Иван С.', 'Иван С. Петров', 'Ли', 'Ян', "O'Brien", 'D’Artagnan',
@@ -131,13 +114,3 @@ for (const [label, V] of Object.entries(implementations)) {
     assert.equal(V.checkContact('@dmitry' + ZW + '_s').value, '@dmitry_s');
   });
 }
-
-test('на сайте и в скрипте одинаковые вердикты для всех примеров', () => {
-  const [site, script] = Object.values(implementations);
-  const all = [
-    ...NAMES_OK.map((v) => ['checkName', v]), ...Object.keys(NAMES_BAD).map((v) => ['checkName', v]),
-    ...COMPANIES_OK.map((v) => ['checkCompany', v]), ...Object.keys(COMPANIES_BAD).map((v) => ['checkCompany', v]),
-    ...Object.keys(CONTACTS_OK).map((v) => ['checkContact', v]), ...Object.keys(CONTACTS_BAD).map((v) => ['checkContact', v]),
-  ];
-  for (const [fn, v] of all) assert.deepEqual(JSON.parse(JSON.stringify(site[fn](v))), JSON.parse(JSON.stringify(script[fn](v))), `${fn}(«${v}»)`);
-});

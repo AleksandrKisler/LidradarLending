@@ -1,12 +1,11 @@
 (function () {
   "use strict";
 
-  /* Адрес приёма заявок на бета-тест: веб-приложение Google Apps Script, которое дописывает
-     строку в Google Таблицу. Адрес оканчивается на /exec. Код и инструкция по подключению:
-     integrations/google-sheets/README.md.
-     Пока пусто: на своём компьютере (localhost, файл) форма показывает успех для проверки вёрстки,
-     а на сайте покажет ошибку, чтобы заявки не терялись молча. */
-  var FORM_ENDPOINT = "https://script.google.com/macros/s/AKfycbwEy_zrLOW7TmdI8cnoweAQ3RrOvLugyNZUSSeDkVvuwA1zClmgXcfd14No1a7WvRb9rA/exec";
+  /* Адрес приёма заявок на бета-тест. Заявки принимает server.mjs (запускается рядом с index.html)
+     и дописывает в файл leads.jsonl на сервере. Адрес относительный: сайт и приём работают на одном домене.
+     Если открыть страницу не через server.mjs (например, python3 -m http.server или файл с диска),
+     приёма нет и форма покажет ошибку отправки. Подробности: README.md, раздел «Приём заявок». */
+  var FORM_ENDPOINT = "/api/lead";
 
   /* Дата релиза: 15 октября 2026 (месяцы в JS с нуля) */
   var RELEASE = new Date(2026, 9, 15);
@@ -140,7 +139,7 @@
   }
 
   /* Правила проверки имени, компании и контакта лежат в assets/validate.js: те же правила
-     повторяет скрипт Google, поэтому заявку нельзя обойти прямым запросом. */
+     применяет server.mjs, поэтому заявку нельзя обойти прямым запросом. */
   var V = window.LidRadarValidate;
 
   var MESSAGES = {
@@ -284,8 +283,7 @@
     return window.location.protocol === "file:" || h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h === "";
   }
 
-  /* Отправка заявки. Content-Type text/plain делает запрос «простым»: браузер не посылает
-     предварительный запрос CORS, которого Apps Script не поддерживает. Тело всё равно JSON. */
+  /* Отправка заявки на server.mjs. Ответ: { ok: true } или { ok: false, error }. */
   function sendLead(payload) {
     if (!FORM_ENDPOINT) {
       if (isLocalPreview()) {
@@ -302,7 +300,7 @@
 
     return fetch(FORM_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       redirect: "follow",
       signal: controller ? controller.signal : undefined

@@ -3,8 +3,12 @@
   "configurations": [
     {
       "name": "landing",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "5180", "--bind", "127.0.0.1"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "server.mjs",
+        "--port",
+        "5180"
+      ],
       "port": 5180
     }
   ]

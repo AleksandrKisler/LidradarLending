@@ -1,8 +1,6 @@
 /* LidRadar: проверка полей формы заявки.
-   Один и тот же код работает на сайте (assets/app.js) и в скрипте Google (блок validate-core в
-   integrations/google-sheets/Code.gs), поэтому заявку нельзя обойти прямым запросом в таблицу.
-   Что блок в Code.gs не разошёлся с этим файлом, проверяет integrations/google-sheets/validate.test.mjs.
-   Правила проверки и примеры: тот же тест. */
+   Один и тот же код работает на сайте (assets/app.js) и на сервере приёма заявок (server.mjs),
+   поэтому заявку нельзя обойти прямым запросом. Примеры допустимых и недопустимых значений: tests/validate.test.mjs. */
 (function (root) {
 /* BEGIN validate-core */
 var UNICODE = (function () {
