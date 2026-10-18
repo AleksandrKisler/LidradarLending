@@ -1,0 +1,16 @@
+# В образ попадают только server.mjs, index.html, assets/ и legal/ (см. Dockerfile).
+# Эти правила защищают от случайной копии заявок и служебных файлов.
+.git
+.idea
+.claude
+tests
+node_modules
+README.md
+Dockerfile
+.dockerignore
+.gitignore
+.DS_Store
+leads.jsonl
+leads*.jsonl
+*.jsonl
+*.jsonl.bak

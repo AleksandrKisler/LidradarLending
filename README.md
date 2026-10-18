@@ -49,6 +49,8 @@ jq -r '[.date,.name,.company,.business,.contact,(.locations//""),.source,.status
 
 **Настройки** (переменные окружения): `PORT` (5180), `HOST` (127.0.0.1; `0.0.0.0` открывает порт наружу), `LEADS_FILE` (другой путь к файлу; внутри `assets/` и `legal/` нельзя), `TRUST_PROXY=1` (за nginx или Caddy: адрес посетителя для лимита берётся из `X-Forwarded-For`).
 
+**Production (Docker).** В боевом стеке лендинг запускается контейнером `landing` рядом с приложением, за общим Caddy на своём домене (`lid-radar.online`). `Dockerfile` кладёт в образ только `server.mjs`, `index.html`, `assets/` и `legal/` (`.dockerignore` не пускает туда `leads.jsonl`, тесты и `.git`), заявки пишутся в том `/data/leads.jsonl`. Образ собирает `scripts/build-landing-image.sh` из репозитория бэкенда (`--landing-dir` с путём к этому каталогу): тег образа — первые 12 символов git sha этого репозитория, собирать можно только из закоммиченного дерева. Развёртывание, чтение заявок, копии и очистка по сроку — `Lidradar/docs/runbooks/vps-spaceweb-deployment.md`. Примеры ниже (systemd, nginx) нужны, если запускать без Docker.
+
 Пример для systemd (`/etc/systemd/system/lidradar-landing.service`):
 
 ```ini
