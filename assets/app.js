@@ -7,8 +7,8 @@
      приёма нет и форма покажет ошибку отправки. Подробности: README.md, раздел «Приём заявок». */
   var FORM_ENDPOINT = "/api/lead";
 
-  /* Дата релиза: 15 октября 2026 (месяцы в JS с нуля) */
-  var RELEASE = new Date(2026, 9, 15);
+  /* Старт бета-теста: 6 ноября 2026 (месяцы в JS с нуля) */
+  var RELEASE = new Date(2026, 10, 6);
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -80,7 +80,7 @@
         var to = tlTime(tlItems[nextIdx]);
         frac = Math.min(1, Math.max(0, (nowMs - from) / (to - from)));
       }
-      progress = (lastDone + frac) / (tlItems.length - 1);
+      progress = (lastDone + frac * (nextIdx === -1 ? 0 : nextIdx - lastDone)) / (tlItems.length - 1);
     }
     tl.querySelector(".tl__axis").style.setProperty("--progress", (progress * 100).toFixed(2) + "%");
 
@@ -329,7 +329,7 @@
     var first = name.trim().split(/\s+/)[0];
     $("done-text").textContent =
       (first ? "Спасибо, " + first + "! " : "Спасибо! ") +
-      "Мы свяжемся с вами по указанному контакту. Бета-тест стартует 15 октября.";
+      "Мы свяжемся с вами по указанному контакту. Бета-тест стартует 6 ноября.";
     form.hidden = true;
     $("form-head").hidden = true;
     done.hidden = false;
