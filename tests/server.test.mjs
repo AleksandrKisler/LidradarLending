@@ -243,7 +243,7 @@ test('сайт раздаётся: главная, ресурсы и юриди�
   const s = await start();
   try {
     for (const [url, type] of [
-      ['/', 'text/html'], ['/index.html', 'text/html'], ['/assets/app.js', 'text/javascript'], ['/assets/styles.css', 'text/css'],
+      ['/', 'text/html'], ['/assets/app.js', 'text/javascript'], ['/assets/styles.css', 'text/css'],
       ['/assets/validate.js', 'text/javascript'], ['/assets/img/ui-radar.webp', 'image/webp'],
       ['/legal/', 'text/html'], ['/legal/privacy.html', 'text/html'], ['/legal/consent.html', 'text/html']
     ]) {
@@ -260,6 +260,58 @@ test('сайт раздаётся: главная, ресурсы и юриди�
     assert.equal(redirect.headers.get('location'), '/legal/');
     const health = await fetch(s.base + '/api/health');
     assert.deepEqual(await health.json(), { ok: true, service: 'lidradar-landing' });
+  } finally { await s.stop(); }
+});
+
+test('публичные SEO-маршруты, canonical URL и sitemap согласованы', async () => {
+  const s = await start();
+  const origin = 'https://lid-radar.online';
+  const guide = '/kak-ne-teryat-zayavki-v-telegram/';
+  try {
+    const robots = await fetch(s.base + '/robots.txt');
+    assert.equal(robots.status, 200);
+    assert.match(robots.headers.get('content-type'), /^text\/plain/);
+    const rules = await robots.text();
+    assert.match(rules, /^User-agent: \*$/m);
+    assert.doesNotMatch(rules, /^Disallow: \/$/m);
+    assert.ok(rules.includes('Sitemap: ' + origin + '/sitemap.xml'));
+
+    const sitemap = await fetch(s.base + '/sitemap.xml');
+    assert.equal(sitemap.status, 200);
+    assert.match(sitemap.headers.get('content-type'), /^application\/xml/);
+    const urls = [...(await sitemap.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, url]) => url);
+    assert.deepEqual(urls, [origin + '/', origin + guide]);
+
+    for (const url of urls) {
+      const { pathname } = new URL(url);
+      const page = await fetch(s.base + pathname + '?utm_source=telegram');
+      assert.equal(page.status, 200, pathname);
+      const html = await page.text();
+      assert.ok(html.includes(`rel="canonical" href="${url}"`), pathname);
+      assert.doesNotMatch(html, /<meta[^>]+name="robots"[^>]+noindex/i);
+      assert.notEqual(page.headers.get('x-robots-tag'), 'noindex');
+      assert.ok(html.includes(pathname === '/' ? `href="${guide}"` : 'href="/#demo"'), pathname);
+      const head = await fetch(s.base + pathname, { method: 'HEAD' });
+      assert.equal(head.status, 200, pathname);
+      assert.equal(await head.text(), '', pathname);
+    }
+
+    for (const [alias, canonical] of [
+      ['/index.html', '/'],
+      [guide.slice(0, -1), guide],
+      [guide + 'index.html', guide]
+    ]) {
+      const res = await fetch(s.base + alias + '?utm_source=telegram', { redirect: 'manual' });
+      assert.equal(res.status, 301, alias);
+      assert.equal(res.headers.get('location'), canonical + '?utm_source=telegram', alias);
+    }
+    const icon = await fetch(s.base + '/assets/img/landing-r8/logo.svg', { method: 'HEAD' });
+    assert.equal(icon.status, 200);
+    assert.match(icon.headers.get('content-type'), /^image\/svg\+xml/);
+
+    for (const privatePath of ['/pages/', '/pages' + guide.slice(0, -1) + '.html', guide + 'other.html']) {
+      assert.equal((await fetch(s.base + privatePath)).status, 404, privatePath);
+    }
   } finally { await s.stop(); }
 });
 
@@ -326,4 +378,8 @@ test('файл заявок нельзя положить туда, откуда
   assert.throws(() => createLandingServer({ root: ROOT, leadsFile: path.join(ROOT, 'assets', 'leads.jsonl') }), /assets/);
   assert.throws(() => createLandingServer({ root: ROOT, leadsFile: path.join(ROOT, 'legal', 'x', 'leads.jsonl') }), /legal/);
   assert.throws(() => createLandingServer({ root: ROOT, leadsFile: path.join(ROOT, 'index.html') }), /файл сайта/);
+  assert.throws(() => createLandingServer({
+    root: ROOT,
+    leadsFile: path.join(ROOT, 'pages', 'kak-ne-teryat-zayavki-v-telegram.html')
+  }), /файл сайта/);
 });

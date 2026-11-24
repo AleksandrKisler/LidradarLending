@@ -1,9 +1,10 @@
-# В образ попадают только server.mjs, index.html, assets/ и legal/ (см. Dockerfile).
+# Публичные файлы и код сервера перечислены в Dockerfile.
 # Эти правила защищают от случайной копии заявок и служебных файлов.
 .git
 .idea
 .claude
 tests
+docs
 node_modules
 README.md
 Dockerfile

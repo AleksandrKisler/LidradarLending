@@ -12,8 +12,7 @@
      TRUST_PROXY  1, если сервер стоит за обратным прокси: IP посетителя берётся из X-Forwarded-For
                   (нужен только для ограничения частоты заявок; IP-адрес нигде не сохраняется)
 
-   Файл заявок наружу не отдаётся. Сервер раздаёт только index.html, assets/ и legal/ (список ниже),
-   поэтому leads.jsonl, server.mjs, README.md и каталог .git по адресу сайта недоступны.
+   Файл заявок наружу не отдаётся. Сервер раздаёт только публичные файлы и маршруты из списка ниже.
    Правила проверки полей общие с браузером: assets/validate.js. */
 import http from 'node:http';
 import fs from 'node:fs';
@@ -39,6 +38,8 @@ const TIMEZONE = 'Europe/Moscow';
 // Только это сайт отдаёт наружу. Всё остальное, включая файл заявок, отвечает 404.
 const ROOT_FILES = new Set(['index.html', 'robots.txt', 'sitemap.xml', 'favicon.ico', 'favicon.svg', 'favicon.png']);
 const PUBLIC_DIRS = new Set(['assets', 'legal']);
+const GUIDE_SLUG = 'kak-ne-teryat-zayavki-v-telegram';
+const GUIDE_FILE = path.join('pages', GUIDE_SLUG + '.html');
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -301,6 +302,13 @@ function resolvePublic(root, pathname) {
   const parts = rel.split('/').filter((p) => p !== '');
   if (parts.some((p) => p === '.' || p === '..' || p.startsWith('.'))) return null;
   if (parts.length === 0) return { file: path.join(root, 'index.html'), trailing: true };
+  const [section, document] = parts;
+  if (parts.length === 1 && section === 'index.html') return { redirect: '/' };
+  if (section === GUIDE_SLUG && (parts.length === 1 || (parts.length === 2 && document === 'index.html'))) {
+    const canonical = '/' + GUIDE_SLUG + '/';
+    if (pathname !== canonical) return { redirect: canonical };
+    return { file: path.join(root, GUIDE_FILE), trailing: true };
+  }
   const allowed = parts.length === 1 ? ROOT_FILES.has(parts[0]) || PUBLIC_DIRS.has(parts[0]) : PUBLIC_DIRS.has(parts[0]);
   if (!allowed) return null;
   const file = path.join(root, ...parts);
@@ -319,7 +327,8 @@ export function createLandingServer(options = {}) {
     const rel = path.relative(path.join(root, dir), leadsFile);
     if (!rel.startsWith('..') && !path.isAbsolute(rel)) throw new Error(`Файл заявок не может лежать в каталоге «${dir}/»: он отдаётся сайтом.`);
   }
-  if (path.dirname(leadsFile) === root && ROOT_FILES.has(path.basename(leadsFile))) {
+  if ((path.dirname(leadsFile) === root && ROOT_FILES.has(path.basename(leadsFile))) ||
+      leadsFile === path.join(root, GUIDE_FILE)) {
     throw new Error('Файл заявок не может называться как файл сайта.');
   }
 
@@ -351,9 +360,13 @@ export function createLandingServer(options = {}) {
     return sendJson(res, 200, result.duplicate ? { ok: true, duplicate: true } : { ok: true });
   }
 
-  async function handleStatic(req, res, pathname) {
+  async function handleStatic(req, res, { pathname, search }) {
     let target = resolvePublic(root, pathname);
     if (!target) return sendText(res, 404, 'Not found');
+    if (target.redirect) {
+      res.writeHead(301, { ...SECURITY_HEADERS, Location: target.redirect + search });
+      return res.end();
+    }
     let stat;
     try {
       stat = await fsp.stat(target.file);
@@ -383,7 +396,8 @@ export function createLandingServer(options = {}) {
   }
 
   async function handle(req, res) {
-    const { pathname } = new URL(req.url, 'http://localhost');
+    const url = new URL(req.url, 'http://localhost');
+    const { pathname } = url;
 
     if (pathname === '/api/lead') {
       if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'method' }, { Allow: 'POST' });
@@ -391,7 +405,7 @@ export function createLandingServer(options = {}) {
     }
     if (pathname === '/api/health') return sendJson(res, 200, { ok: true, service: 'lidradar-landing' });
     if (req.method !== 'GET' && req.method !== 'HEAD') return sendText(res, 405, 'Method not allowed', { Allow: 'GET, HEAD' });
-    return handleStatic(req, res, pathname);
+    return handleStatic(req, res, url);
   }
 
   const server = http.createServer((req, res) => {

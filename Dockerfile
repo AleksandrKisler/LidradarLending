@@ -19,9 +19,10 @@ ENV NODE_ENV=production \
     LEADS_FILE=/data/leads.jsonl
 
 WORKDIR /app
-COPY server.mjs index.html ./
+COPY server.mjs index.html robots.txt sitemap.xml ./
 COPY assets ./assets
 COPY legal ./legal
+COPY pages ./pages
 
 # Код и сайт принадлежат root и доступны пользователю node только на чтение (права файлов из
 # контекста сборки бывают любыми, например 600). Каталог заявок принадлежит node (uid 1000):
