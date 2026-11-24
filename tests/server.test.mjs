@@ -309,7 +309,13 @@ test('публичные SEO-маршруты, canonical URL и sitemap согл
     assert.equal(icon.status, 200);
     assert.match(icon.headers.get('content-type'), /^image\/svg\+xml/);
 
-    for (const privatePath of ['/pages/', '/pages' + guide.slice(0, -1) + '.html', guide + 'other.html']) {
+    const indexNowKey = '6a7c1badfc094656a48e60bd72478047';
+    const verification = await fetch(s.base + '/' + indexNowKey + '.txt');
+    assert.equal(verification.status, 200);
+    assert.match(verification.headers.get('content-type'), /^text\/plain/);
+    assert.equal((await verification.text()).trim(), indexNowKey);
+
+    for (const privatePath of ['/pages/', '/pages' + guide.slice(0, -1) + '.html', guide + 'other.html', '/unexpected-root.txt']) {
       assert.equal((await fetch(s.base + privatePath)).status, 404, privatePath);
     }
   } finally { await s.stop(); }

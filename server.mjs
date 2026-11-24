@@ -36,7 +36,8 @@ const TAIL_BYTES = 1024 * 1024;
 const TIMEZONE = 'Europe/Moscow';
 
 // Только это сайт отдаёт наружу. Всё остальное, включая файл заявок, отвечает 404.
-const ROOT_FILES = new Set(['index.html', 'robots.txt', 'sitemap.xml', 'favicon.ico', 'favicon.svg', 'favicon.png']);
+const INDEXNOW_KEY_FILE = '6a7c1badfc094656a48e60bd72478047.txt';
+const ROOT_FILES = new Set(['index.html', 'robots.txt', 'sitemap.xml', 'favicon.ico', 'favicon.svg', 'favicon.png', INDEXNOW_KEY_FILE]);
 const PUBLIC_DIRS = new Set(['assets', 'legal']);
 const GUIDE_SLUG = 'kak-ne-teryat-zayavki-v-telegram';
 const GUIDE_FILE = path.join('pages', GUIDE_SLUG + '.html');

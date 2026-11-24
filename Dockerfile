@@ -20,6 +20,7 @@ ENV NODE_ENV=production \
 
 WORKDIR /app
 COPY server.mjs index.html robots.txt sitemap.xml ./
+COPY 6a7c1badfc094656a48e60bd72478047.txt ./
 COPY assets ./assets
 COPY legal ./legal
 COPY pages ./pages
